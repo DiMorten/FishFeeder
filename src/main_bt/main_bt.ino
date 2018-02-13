@@ -7,8 +7,8 @@ void setup()
   Serial.begin(9600);   // Inicializamos  el puerto serie  
 }
 
-const byte numChars = 32;
-char receivedChars[numChars];   // an array to store the received data
+const byte bt_numChars = 32;
+char bt_receivedChars[bt_numChars];   // an array to store the received data
 
 boolean newData = false;
 
@@ -16,8 +16,9 @@ void loop()
 {
   if(BT.available())    // Si llega un dato por el puerto BT se envía al monitor serial
   {
-    Serial.write(BT.read());
+    //Serial.write(BT.read());
     bt_recvWithEndMarker();
+    bt_showNewData();
   }
 
   if(Serial.available())  // Si llega un dato por el monitor serial se envía al puerto BT
@@ -36,24 +37,25 @@ void bt_recvWithEndMarker() {
         rc = BT.read();
 
         if (rc != endMarker) {
-            receivedChars[ndx] = rc;
+            bt_receivedChars[ndx] = rc;
             ndx++;
-            if (ndx >= numChars) {
-                ndx = numChars - 1;
+            if (ndx >= bt_numChars) {
+                ndx = bt_numChars - 1;
             }
         }
         else {
-            receivedChars[ndx] = '\0'; // terminate the string
+            bt_receivedChars[ndx] = '\0'; // terminate the string
             ndx = 0;
             newData = true;
         }
     }
 }
 
-void showNewData() {
+void bt_showNewData() {
     if (newData == true) {
-        Serial.print("This just in ... ");
-        Serial.println(receivedChars);
+        Serial.print("This just in ... \"");
+        Serial.println(bt_receivedChars);
+        Serial.print("\"");
         newData = false;
     }
 }
