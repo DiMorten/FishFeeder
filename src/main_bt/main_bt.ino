@@ -24,7 +24,9 @@ typedef struct {
   char receivedChars[bt_numChars];
   char receivedChars_h[3];
   char receivedChars_m[3];
-  
+  uint8_t date_was_set_flag;
+  uint8_t dow_value;
+  uint8_t day_alarm;
   uint8_t alarm_ring; //1 when alarm is ringing
 }__attribute__ ((__packed__)) TimeData;
 
@@ -41,6 +43,8 @@ void setup()
   td.alarm.h=0;
   td.alarm.m=0;
   td.alarm_ring=0; 
+  td.date_was_set_flag=0;
+  td.day_alarm=0;
   Serial.print(rtc.getTimeStr());
   Serial.print(" ");
   
@@ -158,6 +162,14 @@ void alarm_set(TimeData *td) {
     
     
   }
+  else if(td->receivedChars[0]=='d') {
+    td->date_was_set_flag=1;
+    td->dow_value=atoi(td->receivedChars[1]);
+    if(td->dow_value==0) {
+      td->day_alarm=1;
+    }
+  }
+    
   int h_val = atoi(&td->receivedChars_h[0]);  
   int m_val = atoi(&td->receivedChars_m[0]);  
   
@@ -171,9 +183,12 @@ void alarm_set(TimeData *td) {
 void rtc_check(TimeData *td) {
   
     t=rtc.getTime();
+    if(t.dow==td->dow_value-1) {
+      td->day_alarm=1;
+    }
     //Serial.println(t.hour, DEC);
     //Serial.println(t.min, DEC);
-    if(t.hour==td->alarm.h && t.min==td->alarm.m) {
+    if(t.hour==td->alarm.h && t.min==td->alarm.m && td->day_alarm!=0) {
       myservo.write(160);
       digitalWrite(13, HIGH);
       Serial.println("LED encendido");
@@ -182,6 +197,7 @@ void rtc_check(TimeData *td) {
       digitalWrite(13, LOW);
       Serial.println("LED apagado");      
       td->alarm_ring=0;
+      td->day_alarm=0;
     }
     
 }
