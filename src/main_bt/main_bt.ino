@@ -1,8 +1,10 @@
 #include <SoftwareSerial.h>   // Incluimos la librería  SoftwareSerial  
 #include <DS3231.h>
+#include <Servo.h>
 
 SoftwareSerial BT(10,11);    // Definimos los pines RX y TX del Arduino conectados al Bluetooth
 DS3231  rtc(SDA, SCL);   // Init the DS3231 using the hardware interface
+Servo myservo;  // create servo object to control a servo
 
 
 
@@ -31,7 +33,7 @@ Time t;
 void setup()
 {
   
-
+  myservo.attach(A4);  // attaches the servo on pin 9 to the servo object
   BT.begin(9600);       // Inicializamos el puerto serie BT que hemos creado
   Serial.begin(9600);   // Inicializamos  el puerto serie  
   pinMode(13, OUTPUT); //Establecer el pin 13 como salida
@@ -172,9 +174,11 @@ void rtc_check(TimeData *td) {
     //Serial.println(t.hour, DEC);
     //Serial.println(t.min, DEC);
     if(t.hour==td->alarm.h && t.min==td->alarm.m) {
+      myservo.write(160);
       digitalWrite(13, HIGH);
       Serial.println("LED encendido");
       delay(1000);
+      myservo.write(20);
       digitalWrite(13, LOW);
       Serial.println("LED apagado");      
       td->alarm_ring=0;
