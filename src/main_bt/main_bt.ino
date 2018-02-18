@@ -20,6 +20,9 @@ typedef struct {
   TimeValues now;
   TimeValues alarm;
   char receivedChars[bt_numChars];
+  char receivedChars_h[3];
+  char receivedChars_m[3];
+  
   uint8_t alarm_ring; //1 when alarm is ringing
 }__attribute__ ((__packed__)) TimeData;
 
@@ -35,6 +38,8 @@ void setup()
   td.alarm.h=0;
   td.alarm.m=0;
   td.alarm_ring=0; 
+
+  
 }
 
 
@@ -45,7 +50,9 @@ void loop()
     //Serial.write(BT.read());
     bt_recvWithEndMarker();
     bt_showNewData();
-    alarm_set(td);
+    alarm_set(&td);
+
+    
   }
 
   if(Serial.available())  // Si llega un dato por el monitor serial se envía al puerto BT
@@ -64,16 +71,13 @@ void bt_recvWithEndMarker() {
         rc = BT.read();
 
         if (rc != endMarker) {
-            //bt_receivedChars[ndx] = rc;
             td.receivedChars[ndx] = rc;
-            //Serial.println(ndx);
             ndx++;
             if (ndx >= bt_numChars) {
                 ndx = bt_numChars - 1;
             }
         }
         else {
-            //bt_receivedChars[ndx] = '\0'; // terminate the string
             td.receivedChars[ndx] = '\0'; // terminate the string
             ndx = 0;
             newData = true;
@@ -85,7 +89,6 @@ void bt_recvWithEndMarker() {
 void bt_showNewData() {
     if (newData == true) {
         Serial.print("This just in ... \"");
-        //Serial.print(bt_receivedChars);
         Serial.print(td.receivedChars);
         Serial.println("\"");
         newData = false;
@@ -93,10 +96,62 @@ void bt_showNewData() {
 }
 
 void alarm_set(TimeData *td) {
+  Serial.println("here");
+  Serial.println(td->receivedChars[0]);
   // td.receivedChars is of type 12h23m
-  for(int i=0;i<=5;i++) {
-    Serial.println(td->receivedChars[i]);
+  if(td->receivedChars[0]=='r') {
+    int i=1;
+    int i_h=0;
+    int i_m=0;
+    Serial.println("hour:");
+    while(td->receivedChars[i]!='h' && i<=3) {
+      Serial.println("rec");      
+      
+      Serial.println(td->receivedChars[i]);
+      td->receivedChars_h[i_h]=td->receivedChars[i];
+      Serial.println("iter");      
+      Serial.println(i);
+      Serial.println(i_h);
+      Serial.println("end iter");
+
+      i++;
+      i_h++;
+    }
+    i++;
+    Serial.println("min:");
+    while(td->receivedChars[i]!='m' && i<=6) {
+      Serial.println("rec");      
+      
+      Serial.println(td->receivedChars[i]);
+      td->receivedChars_m[i_m]=td->receivedChars[i];
+      Serial.println("iter");      
+      Serial.println(i);
+      Serial.println(i_m);
+      Serial.println("end iter");
+
+      i++;
+      i_m++;
+    }/*
+    /*
+
+    
+    i++;
+    while(td->receivedChars[i]!='m') {
+      td->receivedChars_m[i_m]=td->receivedChars[i];
+      i++;
+      i_m++;
+    }*/
+    Serial.println(i);
+    Serial.println(i_h);
+    Serial.println(i_m);
+    
+    
   }
+  int pos = atoi(&td->receivedChars_h[0]);  
+  int pos2 = atoi(&td->receivedChars_m[0]);  
+  
+  Serial.println(pos);
+  Serial.println(pos2);
   td->now.h=td->alarm.h;
   td->now.m=td->alarm.m;
 }
