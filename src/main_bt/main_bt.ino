@@ -27,6 +27,7 @@ typedef struct {
 }__attribute__ ((__packed__)) TimeData;
 
 static TimeData td;
+Time t;
 void setup()
 {
   
@@ -38,7 +39,8 @@ void setup()
   td.alarm.h=0;
   td.alarm.m=0;
   td.alarm_ring=0; 
-
+  Serial.print(rtc.getTimeStr());
+  Serial.print(" ");
   
 }
 
@@ -51,14 +53,20 @@ void loop()
     bt_recvWithEndMarker();
     bt_showNewData();
     alarm_set(&td);
-
-    
+    Serial.println("td.alarm_ring");
+    Serial.println(td.alarm_ring);    
   }
 
   if(Serial.available())  // Si llega un dato por el monitor serial se envía al puerto BT
   {
      BT.write(Serial.read());
   }
+
+    if(td.alarm_ring==1) {
+      delay(1000);
+      rtc_check(&td);
+    }
+    
 }
 
 
@@ -159,8 +167,18 @@ void alarm_set(TimeData *td) {
 }
 
 void rtc_check(TimeData *td) {
-  if(td->alarm_ring==1) {
+  
+    t=rtc.getTime();
+    //Serial.println(t.hour, DEC);
+    //Serial.println(t.min, DEC);
+    if(t.hour==td->alarm.h && t.min==td->alarm.m) {
+      digitalWrite(13, HIGH);
+      Serial.println("LED encendido");
+      delay(1000);
+      digitalWrite(13, LOW);
+      Serial.println("LED apagado");      
+      td->alarm_ring=0;
+    }
     
-  }
 }
 
