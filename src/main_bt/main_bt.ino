@@ -100,6 +100,7 @@ void alarm_set(TimeData *td) {
   Serial.println(td->receivedChars[0]);
   // td.receivedChars is of type 12h23m
   if(td->receivedChars[0]=='r') {
+    td->alarm_ring=1;
     int i=1;
     int i_h=0;
     int i_m=0;
@@ -147,12 +148,19 @@ void alarm_set(TimeData *td) {
     
     
   }
-  int pos = atoi(&td->receivedChars_h[0]);  
-  int pos2 = atoi(&td->receivedChars_m[0]);  
+  int h_val = atoi(&td->receivedChars_h[0]);  
+  int m_val = atoi(&td->receivedChars_m[0]);  
   
-  Serial.println(pos);
-  Serial.println(pos2);
-  td->now.h=td->alarm.h;
-  td->now.m=td->alarm.m;
+
+  td->alarm.h=(uint8_t)h_val;
+  td->alarm.m=(uint8_t)m_val;
+  Serial.println(td->alarm.h);
+  Serial.println(td->alarm.m);  
+}
+
+void rtc_check(TimeData *td) {
+  if(td->alarm_ring==1) {
+    
+  }
 }
 
